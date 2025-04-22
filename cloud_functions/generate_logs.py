@@ -13,7 +13,7 @@ DEVICES = ["mobile", "tablet", "smart_tv", "desktop"]
 LOCATIONS = ["France", "US", "Canada", "Brazil", "India", "Japan", "Germany"]
 
 # Récupère le nom du topic depuis les variables d’environnement
-TOPIC_PATH = "projects/movieproject-457013/topics/log_movie"  # format : projects/PROJECT_ID/topics/TOPIC_NAME
+TOPIC_PATH = "projects/movieproject-457013/topics/movie-logs-topic"  # format : projects/PROJECT_ID/topics/TOPIC_NAME
 
 # Client Pub/Sub
 publisher = pubsub_v1.PublisherClient()
