@@ -1,4 +1,3 @@
-# cloud_function.tf
 resource "google_cloudfunctions_function" "simulate_logs" {
   name        = "simulate-logs-function"
   description = "Simule les logs de movie"
@@ -7,7 +6,7 @@ resource "google_cloudfunctions_function" "simulate_logs" {
   entry_point = "main"
 
   source_archive_bucket = google_storage_bucket.cloud_function_code_bucket.name
-  source_archive_object = "cloud_functions/simulate_logs.zip"
+  source_archive_object = "cloud_functions/"  
 
   available_memory_mb = 256
   timeout             = 60
