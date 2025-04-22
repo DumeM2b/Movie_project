@@ -1,89 +1,66 @@
 steps:
-  # Étape 1 : Vérifier si des fichiers Cloud Function ont été modifiés
+  # Étape 1 : Vérifier et gérer les changements dans les Cloud Functions
   - name: "gcr.io/cloud-builders/git"
-    id: Check for Cloud Function changes
+    id: Handle Cloud Function changes
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "cloud_functions/"; then
-          echo "Cloud Function changes detected";
-          exit 0;  # Cloud Function found, proceed to version it in GCS
+        echo "🔍 Checking for Cloud Function changes..."
+        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "^cloud_functions/"; then
+          echo "✅ Cloud Function changes detected"
+          
+          # Définir le nom du bucket pour les Cloud Functions
+          BUCKET_NAME_FUNCTION="$PROJECT_ID-function-code"
+          echo "📤 Uploading Cloud Function code to GCS bucket: $BUCKET_NAME_FUNCTION"
+          
+          # Upload du dossier contenant le code Cloud Function dans le bucket GCS
+          gsutil -m cp -r cloud_functions/* gs://$BUCKET_NAME_FUNCTION/cloud_functions/
+
+          # Déployer la Cloud Function via Terraform
+          echo "🚀 Deploying Cloud Function via Terraform target..."
+          terraform -chdir=/workspace/terraform init
+          terraform -chdir=/workspace/terraform apply -auto-approve -target=google_cloudfunctions_function.simulate_logs
         else
-          echo "No Cloud Function changes";
+          echo "ℹ️ No Cloud Function changes"
         fi
 
-  # Si des changements sont détectés dans la Cloud Function, versionner le fichier dans GCS
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    id: Version Cloud Function files in GCS
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        gsutil -m cp -r cloud_functions/* gs://$BUCKET_NAME/cloud_functions/
-    if: "steps.Check for Cloud Function changes.exit_code == 0"
+        
 
-  # Étape 2 : Appliquer Terraform pour déployer la Cloud Function
-  - name: "hashicorp/terraform:light"
-    id: Apply Terraform changes
-    entrypoint: "terraform"
-    args:
-      - "apply"
-      - "-auto-approve"
-    dir: "/workspace/terraform"  # S'assurer que le bon dossier est utilisé
-    if: "steps.Check for Cloud Function changes.exit_code == 0"
+        
 
-  # Étape 3 : Vérifier si des fichiers DAG ont été modifiés
+
+  # Étape 2 : Vérifier et gérer les changements dans les DAGs
   - name: "gcr.io/cloud-builders/git"
-    id: Check for DAG changes
+    id: Handle DAG changes
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "dags/"; then
-          echo "DAG changes detected";
-          exit 0;  # DAG found, proceed to deploy it
+        echo "🔍 Checking for DAG changes..."
+        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "^dags/"; then
+          echo "✅ DAG changes detected"
+          BUCKET_NAME_DAGS="$PROJECT_ID-composer-dags"
+          echo "📤 Uploading DAGs to GCS bucket: $BUCKET_NAME_DAGS"
+          gsutil -m cp -r dags/ gs://$BUCKET_NAME_DAGS/dags/
         else
-          echo "No DAG changes";
+          echo "ℹ️ No DAG changes"
         fi
 
-  # Si des changements sont détectés dans les DAGs, mettre à jour les fichiers dans GCS
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    id: Deploy DAGs to GCS
-    entrypoint: "gsutil"
-    args:
-      - "-m"
-      - "cp"
-      - "-r"
-      - "dags/"
-      - "gs://$BUCKET_NAME/dags/"
-    if: "steps.Check for DAG changes.exit_code == 0"
-
-  # Étape 4 : Vérifier si des fichiers Terraform ont été modifiés
+  # Étape 3 : Vérifier et gérer les changements dans Terraform (hors cloud_function.tf)
   - name: "gcr.io/cloud-builders/git"
-    id: Check for Terraform changes
+    id: Handle Terraform changes
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "terraform/"; then
-          echo "Terraform changes detected";
-          exit 0;  # Terraform found, proceed to apply
+        echo "🔍 Checking for general Terraform changes (excluding cloud_function.tf)..."
+        if git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "^terraform/" && ! git diff --name-only $COMMIT_SHA^..$COMMIT_SHA | grep -q "terraform/cloud_function.tf"; then
+          echo "✅ General Terraform changes detected"
+          terraform -chdir=/workspace/terraform init
+          terraform -chdir=/workspace/terraform apply -auto-approve
         else
-          echo "No Terraform changes";
+          echo "ℹ️ No general Terraform changes (or only cloud_function.tf modified)"
         fi
 
-  # Si des changements Terraform sont détectés, appliquer les modifications
-  - name: "hashicorp/terraform:light"
-    id: Apply Terraform changes
-    entrypoint: "terraform"
-    args:
-      - "apply"
-      - "-auto-approve"
-    dir: "/workspace/terraform"
-    if: "steps.Check for Terraform changes.exit_code == 0"
 
-# Variables d'environnement pour l'authentification GCP
-options:
-  env:
-    - "GOOGLE_APPLICATION_CREDENTIALS=/workspace/chemin/vers/ta/clé/service-account.json"
