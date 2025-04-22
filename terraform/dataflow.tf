@@ -2,7 +2,7 @@ resource "google_dataflow_job" "pubsub_to_bq" {
   name   = "pubsub-to-bq-job"
   region = var.region
 
-  template_gcs_path = "gs://dataflow-templates-us-central1/latest/Cloud_PubSub_to_BigQuery"
+  template_gcs_path = "gs://dataflow-templates-us-central1/latest/flex/PubSub_to_BigQuery_Flex"
 
   parameters = {
     inputTopic        = "projects/${var.project_id}/topics/log_movie"
