@@ -1,16 +1,35 @@
 steps:
+  # Étape 1 : Build de l'image Docker
   - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-t',
-      '${_IMAGE_URI}',
-      '-f',
-      './cloud_functions/Dockerfile',
-      './cloud_functions'
-    ]
+    args:
+      - 'build'
+      - '-t'
+      - '${_IMAGE_URI}'  # L'URL de l'image avec la version la plus récente
+      - '-f'
+      - './cloud_functions/Dockerfile'  # Le chemin de ton Dockerfile pour la Cloud Function
+      - './cloud_functions'  # Le répertoire contenant le code de la Cloud Function
 
+  # Étape 2 : Push de l'image vers Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${_IMAGE_URI}']
+    args:
+      - 'push'
+      - '${_IMAGE_URI}'  # L'URL où l'image doit être poussée (Artifact Registry)
 
+  # Étape 3 : Déployer sur Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'  # Le nom du service Cloud Run
+      - '--image'
+      - '${_IMAGE_URI}'  # L'image Docker qui vient d'être construite et poussée
+      - '--region'
+      - '${_DEPLOY_REGION}'  # La région où déployer le service Cloud Run
+      - '--platform'
+      - 'managed'  # Utilisation de la plateforme gérée pour Cloud Run
+      - '--allow-unauthenticated'  # Option pour rendre l'API publique, à adapter selon le besoin
+
+# Déclaration des images qui ont été créées pendant le build
 images:
-  - '${_IMAGE_URI}'
+  - '${_IMAGE_URI}'  # L'image Docker qui sera déployée dans Cloud Run
