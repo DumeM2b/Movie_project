@@ -4,6 +4,7 @@
 variable "project_id" {
   type        = string
   description = "ID du projet Google Cloud"
+  
 }
 
 # Variable pour la région
@@ -31,8 +32,31 @@ variable "subnet_name" {
 # Variable pour le nom du dataset BQ
 variable "bq_dataset_name" {
   type        = string
-  description = "Nom du bucket GCS"
+  description = "Nom du dataset BQ"
+  default     = "bq_dataset_movie"
 }
 
 
+variable "github_owner" {
+  type        = string
+  description = "GitHub org/user"
+  default     = "DumeM2b"
+}
 
+variable "github_repo" {
+  type        = string
+  description = "GitHub repo name"
+  default     = "Movie_project"
+}
+
+variable "github_token" {
+  description = "GitHub personal access token with repo access"
+  sensitive   = true
+  
+}
+
+variable "github_installation_id" {
+  type        = number
+  description = "GitHub App installation ID for Cloud Build GitHub connection"
+  
+}
