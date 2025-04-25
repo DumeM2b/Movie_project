@@ -1,0 +1,13 @@
+# Terraform files
+*.tfstate
+*.tfstate.backup
+.terraform/
+crash.log
+*.zip
+*.tar.gz
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
