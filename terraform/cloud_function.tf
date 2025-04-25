@@ -1,17 +1,20 @@
-resource "google_cloudfunctions_function" "simulate_logs" {
-  name        = "simulate-logs-function"
-  description = "Simule les logs de movie"
-  
-  runtime = "python311"
-  entry_point = "main"
+resource "google_cloud_run_v2_service" "simulate_logs" {
+  name     = "simulate-logs"
+  location = var.region
+  deletion_protection = false
 
-  source_archive_bucket = google_storage_bucket.cloud_function_code_bucket.name
-  source_archive_object = "cloud_functions/"  
+  template {
+    containers {
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker_repo.repository_id}/simulate-logs:latest"
 
-  available_memory_mb = 256
-  timeout             = 60
-
-  environment_variables = {
-    PUBSUB_TOPIC = google_pubsub_topic.movie_topic.id
+      env {
+        name  = "PUBSUB_TOPIC"
+        value = "projects/${var.project_id}/topics/movie-topic"
+      }
+    }
   }
+  depends_on = [
+      google_cloudbuild_trigger.simulate_logs_build
+    ]
+
 }
