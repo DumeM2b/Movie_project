@@ -33,3 +33,6 @@ steps:
 # Déclaration des images qui ont été créées pendant le build
 images:
   - '${_IMAGE_URI}'  # L'image Docker qui sera déployée dans Cloud Run
+
+options:
+  logging: CLOUD_LOGGING_ONLY
