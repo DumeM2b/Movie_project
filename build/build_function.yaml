@@ -15,20 +15,20 @@ steps:
       - 'push'
       - '${_IMAGE_URI}'  # L'URL où l'image doit être poussée (Artifact Registry)
 
-  # Étape 3 : Déployer sur Cloud Functions
+  # Étape 3 : Déployer sur Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
-      - 'functions'
+      - 'run'
       - 'deploy'
-      - '${_SERVICE_NAME}'
+      - '${_SERVICE_NAME}'  # Le nom du service Cloud Run
+      - '--image'
+      - '${_IMAGE_URI}'  # L'image Docker à déployer
       - '--region'
-      - '${_DEPLOY_REGION}'
-      - '--trigger-http'
-      - '--allow-unauthenticated'
-      - '--gen2'
-      - '--runtime=custom'
-      - '--docker-repository=${_REPOSITORY_URI}'
+      - '${_DEPLOY_REGION}'  # La région de déploiement
+      - '--platform'
+      - 'managed'  # Plateforme Cloud Run fully managed
+      - '--allow-unauthenticated'  # Permettre l'accès public
 
 
 # Déclaration des images qui ont été créées pendant le build
