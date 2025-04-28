@@ -16,19 +16,19 @@ steps:
       - '${_IMAGE_URI}'  # L'URL où l'image doit être poussée (Artifact Registry)
 
   # Étape 3 : Déployer sur Cloud Functions
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: 'gcloud'
-  args:
-    - 'functions'
-    - 'deploy'
-    - '${_SERVICE_NAME}'
-    - '--region'
-    - '${_DEPLOY_REGION}'
-    - '--trigger-http'
-    - '--allow-unauthenticated'
-    - '--gen2'
-    - '--runtime=custom'
-    - '--docker-repository=${_IMAGE_URI}'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--region'
+      - '${_DEPLOY_REGION}'
+      - '--trigger-http'
+      - '--allow-unauthenticated'
+      - '--gen2'
+      - '--runtime=custom'
+      - '--docker-repository=${_IMAGE_URI}'
 
 
 # Déclaration des images qui ont été créées pendant le build
