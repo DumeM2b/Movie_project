@@ -28,7 +28,7 @@ steps:
       - '--allow-unauthenticated'
       - '--gen2'
       - '--runtime=custom'
-      - '--docker-repository=${_IMAGE_URI}'
+      - '--docker-repository=${_REPOSITORY_URI}'
 
 
 # Déclaration des images qui ont été créées pendant le build
