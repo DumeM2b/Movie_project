@@ -19,16 +19,13 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
-      - 'run'
-      - 'deploy'
-      - '${_SERVICE_NAME}'  # Le nom du service Cloud Run
-      - '--image'
-      - '${_IMAGE_URI}'  # L'image Docker à déployer
-      - '--region'
-      - '${_DEPLOY_REGION}'  # La région de déploiement
-      - '--platform'
-      - 'managed'  # Plateforme Cloud Run fully managed
-      - '--allow-unauthenticated'  # Permettre l'accès public
+      [
+        'run', 'deploy', '${_SERVICE_NAME}',
+        '--image', '${_IMAGE_URI}',
+        '--region', '${_REGION}',
+        '--platform', 'managed',
+        '--allow-unauthenticated'
+      ]
 
 
 # Déclaration des images qui ont été créées pendant le build
